@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import gsap from "gsap";
 
 console.log("SooS");
 console.log(THREE);
@@ -15,9 +16,15 @@ const sizes = {
   height: 600
 };
 
+const camPos = {
+  x: 0,
+  y: 0,
+  z: 3
+};
+
 // Camera
 const camera = new THREE.PerspectiveCamera(75, sizes.width / sizes.height);
-camera.position.z = 3;
+camera.position.z = camPos.z;
 scene.add(camera);
 
 // Renderer
@@ -36,8 +43,8 @@ const material = new THREE.MeshBasicMaterial({ color: 0xff0000 });
 const mesh = new THREE.Mesh(geometry, material);
 // mesh.position.set(0.7, -0.6, 1);
 // mesh.scale.set(2, 0.25, 0.5);
-mesh.rotation.x = Math.PI * 0.25;
-mesh.rotation.y = Math.PI * 0.25;
+// mesh.rotation.x = Math.PI * 0.25;
+// mesh.rotation.y = Math.PI * 0.25;
 
 // const group = new THREE.Group();
 // group.scale.y = 2;
@@ -74,16 +81,36 @@ renderer.render(scene, camera);
 /**
  * Animate
  */
-const clock = new THREE.Clock();
+
+gsap.to(mesh.position, { duration: 1, delay: 1, x: 2 });
 
 const tick = () => {
-  const elapsedTime = clock.getElapsedTime();
+  // Repeat on Next Frame
+  window.requestAnimationFrame(tick);
 
   // Update objects
-  mesh.position.x = Math.cos(elapsedTime);
-  mesh.position.y = Math.sin(elapsedTime);
+  mesh.rotation.x += 0.01;
+  mesh.rotation.y += 0.01;
 
-  // ...
+  camera.position.set(camPos.x, camPos.y, camPos.z);
+
+  // Update Render
+  renderer.render(scene, camera);
 };
 
 tick();
+
+window.addEventListener("keydown", e => {
+  if (e.key == "ArrowRight") {
+    camPos.x += 0.1;
+  }
+  if (e.key == "ArrowLeft") {
+    camPos.x -= 0.1;
+  }
+  if (e.key == "ArrowUp") {
+    camPos.y += 0.1;
+  }
+  if (e.key == "ArrowDown") {
+    camPos.y -= 0.1;
+  }
+});

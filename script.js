@@ -12,8 +12,8 @@ const scene = new THREE.Scene();
 
 // Sizes
 const sizes = {
-  width: 800,
-  height: 600
+  width: window.innerWidth,
+  height: window.innerHeight
 };
 
 const camPos = {
@@ -72,6 +72,19 @@ const mesh = new THREE.Mesh(geometry, material);
 // cube3.position.x = 1.5;
 // group.add(cube3);
 
+const bosk = new THREE.Mesh(
+  new THREE.BoxGeometry(1, 1, 1, 2, 2, 2),
+  new THREE.MeshBasicMaterial({ color: 0xff0000, wireframe: true })
+);
+scene.add(bosk);
+bosk.position.set(0, 2, 0);
+
+const sphere = new THREE.Mesh(
+  new THREE.SphereGeometry(1, 32, 32),
+  new THREE.MeshBasicMaterial({ color: 0xff0000, wireframe: true })
+);
+scene.add(sphere);
+
 camera.lookAt(mesh.position);
 
 scene.add(mesh);
@@ -92,7 +105,11 @@ const tick = () => {
   mesh.rotation.x += 0.01;
   mesh.rotation.y += 0.01;
 
-  camera.position.set(camPos.x, camPos.y, camPos.z);
+  camera.position.set(
+    (camera.position.x + camPos.x) * 0.9,
+    (camera.position.y + camPos.y) * 0.9,
+    camPos.z
+  );
 
   // Update Render
   renderer.render(scene, camera);
@@ -102,15 +119,15 @@ tick();
 
 window.addEventListener("keydown", e => {
   if (e.key == "ArrowRight") {
-    camPos.x += 0.1;
+    camPos.x += 0.025;
   }
   if (e.key == "ArrowLeft") {
-    camPos.x -= 0.1;
+    camPos.x -= 0.025;
   }
   if (e.key == "ArrowUp") {
-    camPos.y += 0.1;
+    camPos.y += 0.025;
   }
   if (e.key == "ArrowDown") {
-    camPos.y -= 0.1;
+    camPos.y -= 0.025;
   }
 });

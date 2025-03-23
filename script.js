@@ -33,6 +33,35 @@ renderer.setSize(sizes.width, sizes.height);
 const axesHelper = new THREE.AxesHelper(2);
 scene.add(axesHelper);
 
+//// LIGHTS
+const ambientLight = new THREE.AmbientLight(0xffffff, 1);
+scene.add(ambientLight);
+
+//// TEXTURES
+
+const textureLoader = new THREE.TextureLoader();
+const sciFiWallColor = textureLoader.load(
+  "/Textures/Sci-Fi_Wall_016_basecolor.png"
+);
+// sciFiWallColor.colorSpace = THREE.SRGBColorSpace;
+
+const sciFiWallRough = textureLoader.load(
+  "Textures/Sci-Fi_Wall_016_roughness.png"
+);
+const sciFiWallAmbient = textureLoader.load(
+  "Textures/Sci-Fi_Wall_016_ambientOcclusion.png"
+);
+const sciFiWallHeight = textureLoader.load(
+  "Textures/Sci-Fi_Wall_016_height.png"
+);
+const sciFiWallNormal = textureLoader.load(
+  "Textures/Sci-Fi_Wall_016_normal.png"
+);
+const sciFiWallMetal = textureLoader.load(
+  "Textures/Sci-Fi_Wall_016_metallic.png"
+);
+
+//// OBJECTS
 // Cube Example
 const geometry = new THREE.BoxGeometry(1, 1, 1);
 const material = new THREE.MeshBasicMaterial({ color: 0xff0000 });
@@ -68,7 +97,7 @@ function createBlock(sizeX, sizeY) {
       // Cube creation
       currentCube = new THREE.Mesh(
         new THREE.BoxGeometry(1, 1, 1),
-        new THREE.MeshBasicMaterial({ color: 0xff0000, wireframe: true })
+        new THREE.MeshBasicMaterial({ map: sciFiWallColor })
       );
       // Add cube to scene
       group.add(currentCube);
@@ -101,7 +130,7 @@ const tick = () => {
   mesh.rotation.x += 0.01;
   mesh.rotation.y += 0.01;
 
-  controls.update(0.2);
+  // controls.update(0.2);
 
   // Update sizes
   sizes.width = window.innerWidth;

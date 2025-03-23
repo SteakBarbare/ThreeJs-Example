@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import { FirstPersonControls } from "three/addons/controls/FirstPersonControls.js";
 import gsap from "gsap";
 
 console.log("SooS");
@@ -19,13 +20,8 @@ const sizes = {
 const camPos = {
   x: 0,
   y: 0,
-  z: 3
+  z: 10
 };
-
-// Camera
-const camera = new THREE.PerspectiveCamera(75, sizes.width / sizes.height);
-camera.position.z = camPos.z;
-scene.add(camera);
 
 // Renderer
 const renderer = new THREE.WebGLRenderer({
@@ -41,42 +37,16 @@ scene.add(axesHelper);
 const geometry = new THREE.BoxGeometry(1, 1, 1);
 const material = new THREE.MeshBasicMaterial({ color: 0xff0000 });
 const mesh = new THREE.Mesh(geometry, material);
-// mesh.position.set(0.7, -0.6, 1);
-// mesh.scale.set(2, 0.25, 0.5);
-// mesh.rotation.x = Math.PI * 0.25;
-// mesh.rotation.y = Math.PI * 0.25;
+scene.add(mesh);
 
-// const group = new THREE.Group();
-// group.scale.y = 2;
-// group.rotation.y = 0.2;
-// scene.add(group);
-
-// const cube1 = new THREE.Mesh(
-//   new THREE.BoxGeometry(1, 1, 1),
-//   new THREE.MeshBasicMaterial({ color: 0xff0000 })
-// );
-// cube1.position.x = -1.5;
-// group.add(cube1);
-
-// const cube2 = new THREE.Mesh(
-//   new THREE.BoxGeometry(1, 1, 1),
-//   new THREE.MeshBasicMaterial({ color: 0xff0000 })
-// );
-// cube2.position.x = 0;
-// group.add(cube2);
-
-// const cube3 = new THREE.Mesh(
-//   new THREE.BoxGeometry(1, 1, 1),
-//   new THREE.MeshBasicMaterial({ color: 0xff0000 })
-// );
-// cube3.position.x = 1.5;
-// group.add(cube3);
+const group = new THREE.Group();
+scene.add(group);
 
 const bosk = new THREE.Mesh(
   new THREE.BoxGeometry(1, 1, 1, 2, 2, 2),
   new THREE.MeshBasicMaterial({ color: 0xff0000, wireframe: true })
 );
-scene.add(bosk);
+// scene.add(bosk);
 bosk.position.set(0, 2, 0);
 
 const sphere = new THREE.Mesh(
@@ -85,18 +55,44 @@ const sphere = new THREE.Mesh(
 );
 scene.add(sphere);
 
-camera.lookAt(mesh.position);
+// New function to create a huge bloc
+function createBlock(sizeX, sizeY) {
+  let currentX = 0;
+  let currentY = 0;
+  let currentCube;
 
-scene.add(mesh);
+  // Each line will have a width from O to sizeX (parameter)
+  for (currentX = 0; currentX < sizeX; currentX++) {
+    // For each line, we'll draw a cube till we reach sizeY
+    for (currentY = 0; currentY < sizeY; currentY++) {
+      // Cube creation
+      currentCube = new THREE.Mesh(
+        new THREE.BoxGeometry(1, 1, 1),
+        new THREE.MeshBasicMaterial({ color: 0xff0000, wireframe: true })
+      );
+      // Add cube to scene
+      group.add(currentCube);
+      // Change cube position depending on the loops index
+      currentCube.position.set(currentX, currentY, 1);
+    }
+  }
+}
+
+createBlock(5, 8);
+
+// Camera
+const camera = new THREE.PerspectiveCamera(75, sizes.width / sizes.height);
+camera.position.z = camPos.z;
+scene.add(camera);
+const controls = new FirstPersonControls(camera, canvas);
+camera.lookAt(mesh.position);
 
 renderer.render(scene, camera);
 
-/**
- * Animate
- */
-
+// GSAP Simple Movement
 gsap.to(mesh.position, { duration: 1, delay: 1, x: 2 });
 
+// Animation Tick
 const tick = () => {
   // Repeat on Next Frame
   window.requestAnimationFrame(tick);
@@ -105,29 +101,21 @@ const tick = () => {
   mesh.rotation.x += 0.01;
   mesh.rotation.y += 0.01;
 
-  camera.position.set(
-    (camera.position.x + camPos.x) * 0.9,
-    (camera.position.y + camPos.y) * 0.9,
-    camPos.z
-  );
+  controls.update(0.2);
 
+  // Update sizes
+  sizes.width = window.innerWidth;
+  sizes.height = window.innerHeight;
+
+  // Update camera
+  camera.aspect = sizes.width / sizes.height;
+  camera.updateProjectionMatrix();
+
+  // Update renderer
+  renderer.setSize(sizes.width, sizes.height);
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
   // Update Render
   renderer.render(scene, camera);
 };
 
 tick();
-
-window.addEventListener("keydown", e => {
-  if (e.key == "ArrowRight") {
-    camPos.x += 0.025;
-  }
-  if (e.key == "ArrowLeft") {
-    camPos.x -= 0.025;
-  }
-  if (e.key == "ArrowUp") {
-    camPos.y += 0.025;
-  }
-  if (e.key == "ArrowDown") {
-    camPos.y -= 0.025;
-  }
-});

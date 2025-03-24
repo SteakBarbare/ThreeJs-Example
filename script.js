@@ -1,6 +1,7 @@
 import * as THREE from "three";
 import { FirstPersonControls } from "three/addons/controls/FirstPersonControls.js";
 import gsap from "gsap";
+import GUI from "lil-gui";
 
 console.log("SooS");
 console.log(THREE);
@@ -19,7 +20,7 @@ const sizes = {
 
 const camPos = {
   x: 0,
-  y: 0,
+  y: 2,
   z: 10
 };
 
@@ -33,9 +34,21 @@ renderer.setSize(sizes.width, sizes.height);
 const axesHelper = new THREE.AxesHelper(2);
 scene.add(axesHelper);
 
+// GUI
+const gui = new GUI();
+
 //// LIGHTS
 const ambientLight = new THREE.AmbientLight(0xffffff, 1);
 scene.add(ambientLight);
+const directionalLight = new THREE.DirectionalLight("#bb6800", 0.9);
+scene.add(directionalLight);
+
+// const pointLight = new THREE.PointLight(0xffffff, 30);
+// pointLight.position.x = 2;
+// pointLight.position.y = 3;
+// pointLight.position.z = 4;
+// scene.add(pointLight);
+gui.add(directionalLight, "intensity").min(0).max(3).step(0.001);
 
 //// TEXTURES
 
@@ -43,7 +56,7 @@ const textureLoader = new THREE.TextureLoader();
 const sciFiWallColor = textureLoader.load(
   "/Textures/Sci-Fi_Wall_016_basecolor.png"
 );
-// sciFiWallColor.colorSpace = THREE.SRGBColorSpace;
+sciFiWallColor.colorSpace = THREE.SRGBColorSpace;
 
 const sciFiWallRough = textureLoader.load(
   "Textures/Sci-Fi_Wall_016_roughness.png"
@@ -60,6 +73,50 @@ const sciFiWallNormal = textureLoader.load(
 const sciFiWallMetal = textureLoader.load(
   "Textures/Sci-Fi_Wall_016_metallic.png"
 );
+
+const rockyFloor = textureLoader.load(
+  "Textures/Rocky/rocky_terrain_02_diff_4k.jpg"
+);
+const rockyAlpha = textureLoader.load("Textures/Rocky/RockyAlpha.png");
+
+//// MATERIALS
+const testMaterial = new THREE.MeshStandardMaterial();
+testMaterial.metalness = 0.45;
+testMaterial.roughness = 0.65;
+
+gui.add(testMaterial, "metalness").min(0).max(1).step(0.0001);
+gui.add(testMaterial, "roughness").min(0).max(1).step(0.0001);
+
+const sciFiFloorMaterial = new THREE.MeshStandardMaterial({
+  map: sciFiWallColor,
+  alphaMap: rockyAlpha,
+  transparent: true,
+  roughnessMap: sciFiWallRough,
+  metalnessMap: sciFiWallMetal,
+  normalMap: sciFiWallNormal,
+  aoMap: sciFiWallAmbient
+});
+
+sciFiWallColor.repeat.set(8, 8);
+sciFiWallRough.repeat.set(8, 8);
+sciFiWallNormal.repeat.set(8, 8);
+sciFiWallAmbient.repeat.set(8, 8);
+sciFiWallHeight.repeat.set(8, 8);
+sciFiWallMetal.repeat.set(8, 8);
+
+sciFiWallColor.wrapS = THREE.RepeatWrapping;
+sciFiWallRough.wrapS = THREE.RepeatWrapping;
+sciFiWallNormal.wrapS = THREE.RepeatWrapping;
+sciFiWallAmbient.wrapS = THREE.RepeatWrapping;
+sciFiWallHeight.wrapS = THREE.RepeatWrapping;
+sciFiWallMetal.wrapS = THREE.RepeatWrapping;
+
+sciFiWallColor.wrapT = THREE.RepeatWrapping;
+sciFiWallRough.wrapT = THREE.RepeatWrapping;
+sciFiWallNormal.wrapT = THREE.RepeatWrapping;
+sciFiWallAmbient.wrapT = THREE.RepeatWrapping;
+sciFiWallHeight.wrapT = THREE.RepeatWrapping;
+sciFiWallMetal.wrapT = THREE.RepeatWrapping;
 
 //// OBJECTS
 // Cube Example
@@ -80,34 +137,17 @@ bosk.position.set(0, 2, 0);
 
 const sphere = new THREE.Mesh(
   new THREE.SphereGeometry(1, 32, 32),
-  new THREE.MeshBasicMaterial({ color: 0xff0000, wireframe: true })
+  testMaterial
 );
 scene.add(sphere);
+sphere.position.set(-3, 0, 0);
 
-// New function to create a huge bloc
-function createBlock(sizeX, sizeY) {
-  let currentX = 0;
-  let currentY = 0;
-  let currentCube;
-
-  // Each line will have a width from O to sizeX (parameter)
-  for (currentX = 0; currentX < sizeX; currentX++) {
-    // For each line, we'll draw a cube till we reach sizeY
-    for (currentY = 0; currentY < sizeY; currentY++) {
-      // Cube creation
-      currentCube = new THREE.Mesh(
-        new THREE.BoxGeometry(1, 1, 1),
-        new THREE.MeshBasicMaterial({ map: sciFiWallColor })
-      );
-      // Add cube to scene
-      group.add(currentCube);
-      // Change cube position depending on the loops index
-      currentCube.position.set(currentX, currentY, 1);
-    }
-  }
-}
-
-createBlock(5, 8);
+const floor = new THREE.Mesh(
+  new THREE.PlaneGeometry(20, 20),
+  sciFiFloorMaterial
+);
+floor.rotation.x = -Math.PI * 0.5;
+scene.add(floor);
 
 // Camera
 const camera = new THREE.PerspectiveCamera(75, sizes.width / sizes.height);
@@ -115,6 +155,7 @@ camera.position.z = camPos.z;
 scene.add(camera);
 const controls = new FirstPersonControls(camera, canvas);
 camera.lookAt(mesh.position);
+camera.position.set(camPos.x, camPos.y, camPos.z);
 
 renderer.render(scene, camera);
 
@@ -127,10 +168,10 @@ const tick = () => {
   window.requestAnimationFrame(tick);
 
   // Update objects
-  mesh.rotation.x += 0.01;
-  mesh.rotation.y += 0.01;
+  sphere.rotation.x += 0.01;
+  sphere.rotation.y += 0.01;
 
-  // controls.update(0.2);
+  controls.update(0.1);
 
   // Update sizes
   sizes.width = window.innerWidth;

@@ -1,5 +1,6 @@
 import * as THREE from "three";
 import { FirstPersonControls } from "three/addons/controls/FirstPersonControls.js";
+import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import gsap from "gsap";
 import GUI from "lil-gui";
 
@@ -79,24 +80,6 @@ const rockyFloor = textureLoader.load(
 );
 const rockyAlpha = textureLoader.load("Textures/Rocky/RockyAlpha.png");
 
-//// MATERIALS
-const testMaterial = new THREE.MeshStandardMaterial();
-testMaterial.metalness = 0.45;
-testMaterial.roughness = 0.65;
-
-gui.add(testMaterial, "metalness").min(0).max(1).step(0.0001);
-gui.add(testMaterial, "roughness").min(0).max(1).step(0.0001);
-
-const sciFiFloorMaterial = new THREE.MeshStandardMaterial({
-  map: sciFiWallColor,
-  alphaMap: rockyAlpha,
-  transparent: true,
-  roughnessMap: sciFiWallRough,
-  metalnessMap: sciFiWallMetal,
-  normalMap: sciFiWallNormal,
-  aoMap: sciFiWallAmbient
-});
-
 sciFiWallColor.repeat.set(8, 8);
 sciFiWallRough.repeat.set(8, 8);
 sciFiWallNormal.repeat.set(8, 8);
@@ -117,6 +100,24 @@ sciFiWallNormal.wrapT = THREE.RepeatWrapping;
 sciFiWallAmbient.wrapT = THREE.RepeatWrapping;
 sciFiWallHeight.wrapT = THREE.RepeatWrapping;
 sciFiWallMetal.wrapT = THREE.RepeatWrapping;
+
+//// MATERIALS
+const testMaterial = new THREE.MeshStandardMaterial();
+testMaterial.metalness = 0.45;
+testMaterial.roughness = 0.65;
+
+gui.add(testMaterial, "metalness").min(0).max(1).step(0.0001);
+gui.add(testMaterial, "roughness").min(0).max(1).step(0.0001);
+
+const sciFiFloorMaterial = new THREE.MeshStandardMaterial({
+  map: sciFiWallColor,
+  alphaMap: rockyAlpha,
+  transparent: true,
+  roughnessMap: sciFiWallRough,
+  metalnessMap: sciFiWallMetal,
+  normalMap: sciFiWallNormal,
+  aoMap: sciFiWallAmbient
+});
 
 //// OBJECTS
 // Cube Example
@@ -148,6 +149,13 @@ const floor = new THREE.Mesh(
 );
 floor.rotation.x = -Math.PI * 0.5;
 scene.add(floor);
+
+const gltfLoader = new GLTFLoader();
+let skull;
+gltfLoader.load("Models/Skull/scene.gltf", gltf => {
+  scene.add(gltf.scene);
+  skull = gltf.scene;
+});
 
 // Camera
 const camera = new THREE.PerspectiveCamera(75, sizes.width / sizes.height);
@@ -186,6 +194,11 @@ const tick = () => {
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
   // Update Render
   renderer.render(scene, camera);
+
+  console.log(skull);
+  if (skull != undefined) {
+    skull.position.y += 0.01;
+  }
 };
 
 tick();
